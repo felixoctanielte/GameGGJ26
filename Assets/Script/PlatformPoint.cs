@@ -2,42 +2,56 @@ using UnityEngine;
 
 public class PlatformPoint : MonoBehaviour
 {
-    private bool sudahDihitung = false; // Ini kuncinya!
-    public int nilaiPoin = 10; // Misal nilai default 10
+    private bool sudahDihitung = false;
+    public int nilaiPoin = 10;
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        // Cek apakah yang nabrak adalah Hero
+        // 1. Cek apakah yang nabrak adalah Hero
         if (collision.gameObject.CompareTag("Hero"))
         {
-            // Kita cek dulu: Apakah platform ini SUDAH DIHITUNG?
-            if (!sudahDihitung)
+            // 2. LOGIKA BARU: Cek Arah Datang
+            // Kita cek titik kontak tumbukan. 
+            // Kalau titik tumbukan ada di ATAS pusat platform, berarti diinjak dari atas.
+            // normal.y < -0.5f artinya Hero menekan ke bawah (mendarat).
+            
+            foreach (ContactPoint2D contact in collision.contacts)
             {
-                // 1. Tambah Skor
-                if (ScoreManager.instance != null)
+                // Jika arah tumbukan mengarah ke bawah (Hero mendarat di atas platform)
+                if (contact.normal.y < -0.5f) 
                 {
-                    ScoreManager.instance.TambahSkor(nilaiPoin);
+                    ProsesPijakan();
+                    break; // Cukup satu titik kontak yang valid
                 }
-
-                // 2. Tambah Hitungan Lompatan
-                if (GameRules.instance != null)
-                {
-                    GameRules.instance.CatatLompatan();
-                }
-
-                // Kunci platform ini biar tidak bisa dihitung lagi
-                sudahDihitung = true; 
-                
-                Debug.Log("Pijakan Baru! Skor nambah.");
             }
         }
     }
 
-    // --- TAMBAHAN PENTING: FUNGSI RESET ---
-    // Fungsi ini akan dipanggil oleh GameRules saat kamu kalah
+    void ProsesPijakan()
+    {
+        // Cek apakah sudah dihitung sebelumnya
+        if (!sudahDihitung)
+        {
+            // Tambah Skor
+            if (ScoreManager.instance != null)
+            {
+                ScoreManager.instance.TambahSkor(nilaiPoin);
+            }
+
+            // Catat Lompatan
+            if (GameRules.instance != null)
+            {
+                GameRules.instance.CatatLompatan();
+            }
+
+            // Kunci agar tidak dihitung lagi
+            sudahDihitung = true;
+            Debug.Log("Pijakan Valid (Dari Atas)!");
+        }
+    }
+
     public void ResetStatus()
     {
-        sudahDihitung = false; // Buka kuncinya lagi
-        Debug.Log("Platform di-reset, siap diinjak lagi.");
+        sudahDihitung = false;
     }
 }
