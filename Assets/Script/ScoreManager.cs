@@ -7,7 +7,8 @@ public class ScoreManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     
     private int score = 0;
-
+    [Header("Score Settings")]
+public int targetScore = 10; 
     void Awake()
     {
         if (instance == null)
@@ -30,11 +31,12 @@ public class ScoreManager : MonoBehaviour
     }
     // ----------------------------------------
 
-    void UpdateTampilan()
+   void UpdateTampilan()
+{
+    if (scoreText != null)
     {
-        if (scoreText != null)
-        {
-            scoreText.text = "Score: " + score.ToString();
-        }
+        // Hasilnya nanti: "Score Platform : 0 / 10"
+        scoreText.text = "Score Platform : " + score.ToString() + " / " + targetScore.ToString();
     }
+}
 }

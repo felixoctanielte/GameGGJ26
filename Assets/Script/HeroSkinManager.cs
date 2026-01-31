@@ -1,82 +1,170 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HeroSkinManager : MonoBehaviour
 {
     public static HeroSkinManager instance;
 
-    [Header("Settings")]
+    [Header("Settings Komponen")]
     public SpriteRenderer spriteRenderer;
     public Rigidbody2D rb;
+    public HeroMovement movementScript; // TARIK Script HeroMovement ke sini di Inspector!
+    public GameObject shieldVisual;
+
+    [Header("UI Toolbar & Cooldown")]
+    public Slider sliderMedis;
+    public Image fillMedis;
+    public Slider sliderPulu;
+    public Image fillPulu;
 
     [Header("Asset - Monyet Biasa")]
-    public Sprite idleNormal;
-    public Sprite jumpNormal;
+    public Sprite idleNormal; public Sprite jumpNormal;
 
-    [Header("Asset - Masker Medis (Normal)")]
-    public Sprite idleMedis;
-    public Sprite jumpMedis;
+    [Header("Asset - Masker Medis (Tombol M)")]
+    public Sprite idleMedis; public Sprite jumpMedis;
+    public float durasiMaxMedis = 5f;
 
-    [Header("Asset - Masker Pulu (Emas)")]
-    public Sprite idlePulu;
-    public Sprite jumpPulu;
+    [Header("Asset - Masker Pulu (Tombol N)")]
+    public Sprite idlePulu; public Sprite jumpPulu;
+    public float durasiMaxPulu = 3f;
 
-    // Status (Bisa dibaca script lain)
-    public bool isGhostMode = false; // Sedang tekan M?
-    public bool isPuluMask = false;  // False = Medis, True = Pulu
+    [Header("Settings System")]
+    public float kecepatanRecharge = 1f;
+
+    private enum MaskState { Normal, Medis, Pulu }
+    private MaskState currentState = MaskState.Normal;
+
+    private float staminaMedis;
+    private float staminaPulu;
+    private bool isMedisExhausted = false;
+    private bool isPuluExhausted = false;
+
+    [HideInInspector] public bool isGhostMode = false;
+    [HideInInspector] public bool isPuluMask = false;
 
     void Awake()
     {
-        if (instance == null) instance = this;
+        instance = this;
+        
+        // Hapus Animator Manual agar tidak bentrok
+        Animator anim = GetComponent<Animator>();
+        if (anim != null) Destroy(anim);
+    }
+
+    void Start()
+    {
+        staminaMedis = durasiMaxMedis;
+        staminaPulu = durasiMaxPulu;
+
+        if (sliderMedis != null) sliderMedis.maxValue = durasiMaxMedis;
+        if (sliderPulu != null) sliderPulu.maxValue = durasiMaxPulu;
+
+        // Otomatis cari script movement kalau lupa ditarik manual
+        if (movementScript == null) movementScript = GetComponent<HeroMovement>();
     }
 
     void Update()
     {
-        // 1. Cek Input Ganti Masker (Tombol N)
-        if (Input.GetKeyDown(KeyCode.N))
-        {
-            isPuluMask = !isPuluMask; // Switch true/false
-            Debug.Log("Ganti Masker: " + (isPuluMask ? "PULU" : "MEDIS"));
-        }
-
-        // 2. Cek Input Mode Ghost (Tombol M ditahan)
-        // Sesuaikan dengan script Ghost Platform kamu (Input.GetKey)
-        if (Input.GetKey(KeyCode.M))
-        {
-            isGhostMode = true;
-        }
-        else
-        {
-            isGhostMode = false;
-        }
-
-        // 3. Update Gambar (Sprite Swapping)
-        UpdateSprite();
+        HandleInput();
+        HandleStamina();
+        UpdateStatusVars();
+        UpdateSprite(); // Logic perbaikan ada di dalam sini
+        UpdateUI();
     }
 
+    // ... (HandleInput, HandleStamina, UpdateStatusVars SAMA SEPERTI SEBELUMNYA) ...
+    // ... Copy paste saja bagian input/stamina/status dari script lama ...
+    
+    void HandleInput() { /* ... COPY DARI SCRIPT SEBELUMNYA ... */ 
+       if (Input.GetKeyDown(KeyCode.N)) {
+           if (currentState == MaskState.Pulu) currentState = MaskState.Normal;
+           else if (staminaPulu > 0 && !isPuluExhausted) currentState = MaskState.Pulu;
+       }
+       else if (Input.GetKeyDown(KeyCode.M)) {
+           if (currentState == MaskState.Medis) currentState = MaskState.Normal;
+           else if (staminaMedis > 0 && !isMedisExhausted) currentState = MaskState.Medis;
+       }
+    }
+
+    void HandleStamina() { /* ... COPY DARI SCRIPT SEBELUMNYA ... */ 
+        if (currentState == MaskState.Medis) {
+            staminaMedis -= Time.deltaTime;
+            if (staminaMedis <= 0) { staminaMedis = 0; isMedisExhausted = true; currentState = MaskState.Normal; }
+        } else if (currentState == MaskState.Pulu) {
+            staminaPulu -= Time.deltaTime;
+            if (staminaPulu <= 0) { staminaPulu = 0; isPuluExhausted = true; currentState = MaskState.Normal; }
+        }
+        if (currentState != MaskState.Medis) {
+            if (staminaMedis < durasiMaxMedis) staminaMedis += Time.deltaTime * kecepatanRecharge;
+            if (staminaMedis > durasiMaxMedis * 0.2f) isMedisExhausted = false;
+        }
+        if (currentState != MaskState.Pulu) {
+            if (staminaPulu < durasiMaxPulu) staminaPulu += Time.deltaTime * kecepatanRecharge;
+            if (staminaPulu > durasiMaxPulu * 0.2f) isPuluExhausted = false;
+        }
+    }
+
+    void UpdateStatusVars() { 
+        if (currentState == MaskState.Normal) { isGhostMode = false; isPuluMask = false; }
+        else if (currentState == MaskState.Medis) { isGhostMode = true; isPuluMask = false; }
+        else if (currentState == MaskState.Pulu) { isGhostMode = true; isPuluMask = true; }
+    }
+
+    // --- BAGIAN YANG DIPERBAIKI ---
     void UpdateSprite()
     {
-        // Cek apakah sedang lompat? (Velocity Y tidak 0)
-        // Kita pakai toleransi 0.1f biar ga flickering pas diem
-        bool isJumping = Mathf.Abs(rb.velocity.y) > 0.1f;
+        if (spriteRenderer == null) return;
 
-        if (isGhostMode)
+        // PERUBAHAN UTAMA: 
+        // Jangan pakai rb.velocity.y, tapi pakai variable isGrounded dari script sebelah.
+        // Kalau isGrounded == false, berarti sedang lompat/jatuh.
+        bool isJumping = false;
+        
+        if (movementScript != null)
         {
-            // --- MODE MASKER (M Ditekan) ---
-            if (isPuluMask)
-            {
-                // Pakai Masker Pulu
-                spriteRenderer.sprite = isJumping ? jumpPulu : idlePulu;
-            }
-            else
-            {
-                // Pakai Masker Medis
-                spriteRenderer.sprite = isJumping ? jumpMedis : idleMedis;
-            }
+            isJumping = !movementScript.isGrounded; 
         }
-        else
+
+        Sprite targetSprite = null;
+
+        switch (currentState)
         {
-            // --- MODE NORMAL (M Tidak Ditekan) ---
-            spriteRenderer.sprite = isJumping ? jumpNormal : idleNormal;
+            case MaskState.Normal:
+                targetSprite = isJumping ? jumpNormal : idleNormal;
+                break;
+            case MaskState.Medis:
+                targetSprite = isJumping ? jumpMedis : idleMedis;
+                break;
+            case MaskState.Pulu:
+                targetSprite = isJumping ? jumpPulu : idlePulu;
+                break;
+        }
+
+        // Safety check biar gambar gak hilang
+        if (targetSprite == null) targetSprite = idleNormal;
+
+        // HANYA GANTI GAMBAR JIKA MEMANG BERBEDA
+        // (Ini mencegah Unity me-render ulang gambar yang sama berkali-kali dalam 1 detik)
+        if (spriteRenderer.sprite != targetSprite)
+        {
+            spriteRenderer.sprite = targetSprite;
+        }
+
+        if (shieldVisual != null) shieldVisual.SetActive(currentState == MaskState.Medis);
+    }
+
+    void UpdateUI() { /* ... COPY DARI SCRIPT SEBELUMNYA ... */ 
+        if (sliderMedis != null) sliderMedis.value = staminaMedis;
+        if (sliderPulu != null) sliderPulu.value = staminaPulu;
+        if (fillMedis != null) {
+            if (isMedisExhausted) fillMedis.color = Color.red;
+            else if (currentState == MaskState.Medis) fillMedis.color = Color.cyan;
+            else fillMedis.color = Color.white;
+        }
+        if (fillPulu != null) {
+            if (isPuluExhausted) fillPulu.color = Color.red;
+            else if (currentState == MaskState.Pulu) fillPulu.color = Color.yellow;
+            else fillPulu.color = Color.white;
         }
     }
 }
