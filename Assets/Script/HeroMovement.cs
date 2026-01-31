@@ -53,9 +53,6 @@ public class HeroMovement : MonoBehaviour
 
     private Vector3 originalScale;
 
-    [Header("AUDIO")]
-    public AudioSource jumpSfx;
-
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -131,10 +128,7 @@ public class HeroMovement : MonoBehaviour
             jumpCount++;
             isGrounded = false;
 
-            if (jumpSfx != null) 
-            {
-                 jumpSfx.Play();
-            }
+            
         }
     }
 

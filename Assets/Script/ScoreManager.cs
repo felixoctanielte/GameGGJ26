@@ -7,15 +7,13 @@ public class ScoreManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     
     private int score = 0;
-    [Header("Score Settings")]
-public int targetScore = 10; 
+
     void Awake()
     {
         if (instance == null)
         {
             instance = this;
         }
-        
     }
 
     public void TambahSkor(int nilai)
@@ -24,18 +22,19 @@ public int targetScore = 10;
         UpdateTampilan();
     }
 
+    // --- TAMBAHAN BARU: FUNGSI RESET SKOR ---
     public void ResetSkor()
     {
-        score = 0; 
-        UpdateTampilan(); 
+        score = 0; // Kembalikan ke 0
+        UpdateTampilan(); // Update teks di layar
     }
-    
+    // ----------------------------------------
 
-   void UpdateTampilan()
-{
-    if (scoreText != null)
+    void UpdateTampilan()
     {
-        scoreText.text = "Score Platform : " + score.ToString() + " / " + targetScore.ToString();
+        if (scoreText != null)
+        {
+            scoreText.text = "Score: " + score.ToString();
+        }
     }
-}
 }

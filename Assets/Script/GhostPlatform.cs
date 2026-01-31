@@ -3,38 +3,58 @@ using UnityEngine;
 public class GhostPlatform : MonoBehaviour
 {
     private SpriteRenderer spriteRenderer;
-    private Collider2D col; 
+
+    void Awake()
+    {
+        // Mengambil referensi komponen gambar pada objek ini
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
 
     void Start()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        col = GetComponent<Collider2D>();
+        // Saat game dimulai, platform otomatis sembunyi dulu
+        SetVisibility(false);
     }
 
-    void Update()
+    // --- BAGIAN EVENT (Mendengarkan MaskSystem) ---
+
+    void OnEnable()
     {
+        // Mendaftar ke event: "Kalau masker nyala, panggil fungsi ShowPlatform"
+        MaskSystem.OnMaskEquip += ShowPlatform;
         
-        if (HeroSkinManager.instance == null) return;
-
-   
-        
-        bool isPakaiMaskerMedis = HeroSkinManager.instance.isGhostMode && !HeroSkinManager.instance.isPuluMask;
-
-        UpdatePlatform(isPakaiMaskerMedis);
+        // Mendaftar ke event: "Kalau masker mati, panggil fungsi HidePlatform"
+        MaskSystem.OnMaskUnequip += HidePlatform;
     }
 
-    void UpdatePlatform(bool aktif)
+    void OnDisable()
     {
-        
-        if (spriteRenderer != null) 
-        {
-            spriteRenderer.enabled = aktif;
-        }
+        // Wajib lapor berhenti mendaftar saat objek dimatikan/pindah scene agar tidak error
+        MaskSystem.OnMaskEquip -= ShowPlatform;
+        MaskSystem.OnMaskUnequip -= HidePlatform;
+    }
 
+    // --- BAGIAN LOGIKA ---
 
-        if (col != null) 
+    void ShowPlatform()
+    {
+        SetVisibility(true);
+    }
+
+    void HidePlatform()
+    {
+        SetVisibility(false);
+    }
+
+    void SetVisibility(bool isVisible)
+    {
+        if (spriteRenderer != null)
         {
-            col.enabled = aktif;
+            // KUNCI UTAMA:
+            // Kita hanya mengubah 'enabled' pada SpriteRenderer (Gambarnya).
+            // Kita TIDAK menyentuh Collider. 
+            // Jadi walaupun isVisible = false (gambar hilang), hero tetap bisa berdiri di atasnya.
+            spriteRenderer.enabled = isVisible;
         }
     }
 }

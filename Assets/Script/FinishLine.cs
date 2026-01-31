@@ -2,55 +2,44 @@ using UnityEngine;
 
 public class FinishLine : MonoBehaviour
 {
-   
+    // Gunakan OnCollisionEnter2D karena Ground_Finish adalah benda padat
     void OnCollisionEnter2D(Collision2D collision)
     {
-       
-        if (collision.gameObject.CompareTag("Hero"))
-        {
-            foreach (ContactPoint2D contact in collision.contacts)
-            {
-            
-                if (contact.normal.y < -0.5f)
-                {
-                    Debug.Log("Mendarat di atas Finish Line!");
-                    CekKemenangan(); 
-                    break; 
-                }
-            }
-        }
+        CekKemenangan(collision.gameObject);
     }
 
+    // Jaga-jaga kalau kamu setting Collidernya sebagai 'Is Trigger'
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Hero"))
-        {
-          
-            if (other.transform.position.y > transform.position.y)
-            {
-                CekKemenangan();
-            }
-        }
+        CekKemenangan(other.gameObject);
     }
 
-    void CekKemenangan()
+    void CekKemenangan(GameObject player)
     {
-        if (GameRules.instance != null)
+        // Cek apakah yang mendarat adalah Hero
+        if (player.CompareTag("Hero"))
         {
-          
-            int langkahSekarang = GameRules.instance.lompatanSaatIni;
-            int targetLangkah = GameRules.instance.batasLompatan; 
+            if (GameRules.instance != null)
+            {
+                // AMBIL DATA DARI GAMERULES
+                int langkahSekarang = GameRules.instance.lompatanSaatIni;
+                int targetLangkah = GameRules.instance.batasLompatan; // Biasanya 10
 
-            if (langkahSekarang == targetLangkah)
-            {
-                Debug.Log("SUKSES! Langkah pas: " + langkahSekarang);
-                GameRules.instance.Menang();
-            }
-            else
-            {
-                Debug.Log("GAGAL! Langkah kamu: " + langkahSekarang + ". Target: " + targetLangkah);
-                
-                GameRules.instance.ResetKeAwal();
+                // LOGIKA PENGECEKAN
+                // Jika langkah BENAR-BENAR 10 (atau sesuai batas)
+                if (langkahSekarang == targetLangkah)
+                {
+                    Debug.Log("SUKSES! Langkah pas: " + langkahSekarang);
+                    GameRules.instance.Menang();
+                }
+                else
+                {
+                    // Jika langkah kurang dari 10 (atau tidak sama)
+                    Debug.Log("GAGAL! Langkah kamu baru: " + langkahSekarang + ". Harusnya: " + targetLangkah);
+                    
+                    // Hukum player dengan Reset
+                    GameRules.instance.ResetKeAwal();
+                }
             }
         }
     }

@@ -14,10 +14,8 @@ public class GameRules : MonoBehaviour
     public int lompatanSaatIni = 0;
     public bool isGameOver = false;
 
-    [Header("UI Popups (Drag dari Hierarchy)")]
-    public GameObject winPanel;  
-    public GameObject losePanel;  
-    public TextMeshProUGUI infoText; 
+    [Header("UI")]
+    public TextMeshProUGUI infoText;
 
     void Awake()
     {
@@ -27,11 +25,9 @@ public class GameRules : MonoBehaviour
     void Start()
     {
         UpdateUI();
-  
-        if (winPanel != null) winPanel.SetActive(false);
-        if (losePanel != null) losePanel.SetActive(false);
     }
 
+    // Fungsi ini dipanggil DARI PlatformPoint
     public void CatatLompatan()
     {
         if (isGameOver) return;
@@ -39,59 +35,48 @@ public class GameRules : MonoBehaviour
         lompatanSaatIni++;
         UpdateUI();
 
+        // Cek Kekalahan
         if (lompatanSaatIni > batasLompatan)
         {
-            Kalah(); 
+            ResetKeAwal();
         }
-    }
-
-    public void Menang()
-    {
-        if (isGameOver) return;
-        isGameOver = true;
-        
-        Debug.Log("YOU WIN!");
-        if (winPanel != null) winPanel.SetActive(true); 
-        Time.timeScale = 0f; 
-    }
-
-    public void Kalah()
-    {
-        if (isGameOver) return;
-        isGameOver = true;
-
-        Debug.Log("GAME OVER!");
-        if (losePanel != null) losePanel.SetActive(true); 
-        Time.timeScale = 0f; 
     }
 
     public void ResetKeAwal()
     {
-        Debug.Log("RETRY GAME");
+        Debug.Log("KALAH! Reset semua sistem.");
+        
+        // 1. Reset Posisi Hero
+        hero.transform.position = posisiStart.position;
+        Rigidbody2D rb = hero.GetComponent<Rigidbody2D>();
+        if (rb != null) rb.velocity = Vector2.zero; // Stop gerak hero
 
-        isGameOver = false;
-        Time.timeScale = 1f; 
+        // 2. Reset Hitungan Lompatan
+        lompatanSaatIni = 0;
 
-    
-        if (winPanel != null) winPanel.SetActive(false);
-        if (losePanel != null) losePanel.SetActive(false);
-        if (hero != null)
+        // 3. Reset Skor (Balik ke 0)
+        if (ScoreManager.instance != null)
         {
-            hero.transform.position = posisiStart.position;
-            Rigidbody2D rb = hero.GetComponent<Rigidbody2D>();
-            if (rb != null) rb.velocity = Vector2.zero;
+            ScoreManager.instance.ResetSkor();
         }
 
-        lompatanSaatIni = 0;
-        if (ScoreManager.instance != null) ScoreManager.instance.ResetSkor();
-        
+        // 4. [INI YANG KAMU MINTA] RESET SEMUA PLATFORM
+        // Cari semua object yang pake script PlatformPoint
         PlatformPoint[] semuaPlatform = FindObjectsOfType<PlatformPoint>();
+        
+        // Perintah satu per satu untuk reset
         foreach (PlatformPoint p in semuaPlatform)
         {
-            p.ResetStatus();
+            p.ResetStatus(); // Panggil fungsi reset di script PlatformPoint
         }
 
         UpdateUI();
+    }
+
+    public void Menang()
+    {
+        isGameOver = true;
+        if (infoText != null) infoText.text = "YOU WIN!";
     }
 
     void UpdateUI()

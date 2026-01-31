@@ -6,6 +6,7 @@ public class VirusLogic : MonoBehaviour
     public bool isOnGhostPlatform = false; 
     public SpriteRenderer visualVirus;
     public Collider2D colliderVirus;
+    
 
     void Start()
     {
