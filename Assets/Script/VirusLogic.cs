@@ -32,12 +32,10 @@ public class VirusLogic : MonoBehaviour
 
             if (heroPakaiPulu)
             {
-                // Munculkan Virus
                 visualVirus.enabled = true;
             }
             else
             {
-                // Sembunyikan Virus
                 visualVirus.enabled = false;
             }
         }
@@ -73,19 +71,19 @@ public class VirusLogic : MonoBehaviour
             {
                 // HERO MENYERANG VIRUS!
                 Debug.Log("Virus Hancur oleh Masker Medis!");
-                
-                // Efek suara atau partikel bisa ditambah di sini
                 Destroy(gameObject); 
             }
             else
             {
                 // HERO MATI
-                // Karena ga pake masker, atau pake masker Pulu (Pulu cuma buat lihat, bukan nyerang)
                 Debug.Log("Hero Mati kena Virus!");
                 
                 if (GameRules.instance != null)
                 {
-                    GameRules.instance.ResetKeAwal();
+                    // --- PERUBAHAN UTAMA DI SINI ---
+                    // Dulu: GameRules.instance.ResetKeAwal();
+                    // Sekarang: Panggil fungsi KALAH agar panel muncul
+                    GameRules.instance.Kalah();
                 }
             }
         }

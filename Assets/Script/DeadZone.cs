@@ -2,19 +2,17 @@ using UnityEngine;
 
 public class DeadZone : MonoBehaviour
 {
-    // OPSI 1: Jika Collider kamu dicentang "Is Trigger" (Rekomendasi)
-    // Pemain akan menembus garis ini lalu mati
+    // OPSI 1: Trigger (Rekomendasi)
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Hero")) // Pastikan Tag player kamu "Hero"
+        if (other.CompareTag("Hero"))
         {
             Debug.Log("Jatuh ke Jurang!");
             MatikanPemain();
         }
     }
 
-    // OPSI 2: Jika Collider kamu TIDAK dicentang "Is Trigger"
-    // Pemain akan nabrak (seperti tanah) lalu mati
+    // OPSI 2: Collision
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Hero"))
@@ -26,10 +24,13 @@ public class DeadZone : MonoBehaviour
 
     void MatikanPemain()
     {
-        // Panggil wasit (GameRules) untuk mereset game
+        // Panggil GameRules
         if (GameRules.instance != null)
         {
-            GameRules.instance.ResetKeAwal();
+            // --- PERUBAHAN UTAMA DI SINI ---
+            // Dulu: GameRules.instance.ResetKeAwal();
+            // Sekarang: Panggil fungsi KALAH agar panel muncul
+            GameRules.instance.Kalah();
         }
     }
 }

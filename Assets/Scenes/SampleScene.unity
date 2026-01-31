@@ -538,7 +538,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 45326095}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 963552300}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: TombolBackToMenu
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &45326095
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3075,7 +3087,7 @@ GameObject:
   - component: {fileID: 715363964}
   - component: {fileID: 715363963}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: UI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3808,6 +3820,8 @@ GameObject:
   - component: {fileID: 963552295}
   - component: {fileID: 963552297}
   - component: {fileID: 963552298}
+  - component: {fileID: 963552299}
+  - component: {fileID: 963552300}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -3878,7 +3892,35 @@ MonoBehaviour:
   hero: {fileID: 598578534}
   lompatanSaatIni: 0
   isGameOver: 0
+  winPanel: {fileID: 394921455}
+  losePanel: {fileID: 476078264}
   infoText: {fileID: 0}
+--- !u!114 &963552299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963552294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65b2fb87079210c4c8c825fe1a49a55c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &963552300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963552294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7122d95113d0724ab7922d404465c37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameUIPanel: {fileID: 715363962}
+  pausePanel: {fileID: 0}
 --- !u!1 &993470319
 GameObject:
   m_ObjectHideFlags: 0
@@ -5758,7 +5800,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1462273629}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 963552298}
+        m_TargetAssemblyTypeName: GameRules, Assembly-CSharp
+        m_MethodName: ResetKeAwal
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1462273629
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6612,7 +6666,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1618651135}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 963552298}
+        m_TargetAssemblyTypeName: GameRules, Assembly-CSharp
+        m_MethodName: ResetKeAwal
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1618651135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7075,7 +7141,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1683292340}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 963552300}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: TombolBackToMenu
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1683292340
 MonoBehaviour:
   m_ObjectHideFlags: 0
