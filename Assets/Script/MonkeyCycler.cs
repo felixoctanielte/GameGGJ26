@@ -9,7 +9,6 @@ public class MonkeyCycler : MonoBehaviour
 
     void Start()
     {
-        // Mulai looping
         StartCoroutine(GantiMonyetRoutine());
     }
 

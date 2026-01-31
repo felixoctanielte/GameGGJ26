@@ -4,8 +4,8 @@ using System;
 public class MaskSystem : MonoBehaviour
 {
     [Header("Pengaturan Waktu")]
-    public float durasiPakai = 60f;    // Waktu masker aktif (3 detik)
-    public float durasiCooldown = 1f; // Waktu tunggu (7 detik)
+    public float durasiPakai = 60f;    
+    public float durasiCooldown = 1f; 
 
     [Header("Status (Jangan diubah manual)")]
     public bool sedangPakai = false;
@@ -19,13 +19,12 @@ public class MaskSystem : MonoBehaviour
 
     void Update()
     {
-        // 1. INPUT: Hanya bisa tekan M kalau TIDAK sedang pakai DAN TIDAK sedang cooldown
+     
         if (Input.GetKeyDown(KeyCode.M) && !sedangPakai && !sedangCooldown)
         {
             MulaiPakaiMasker();
         }
 
-        // 2. LOGIKA DURASI (Saat Masker Dipakai)
         if (sedangPakai)
         {
             sisaWaktuPakai -= Time.deltaTime;
@@ -36,7 +35,6 @@ public class MaskSystem : MonoBehaviour
             }
         }
 
-        // 3. LOGIKA COOLDOWN (Saat Nunggu)
         if (sedangCooldown)
         {
             sisaWaktuCooldown -= Time.deltaTime;
@@ -54,19 +52,17 @@ public class MaskSystem : MonoBehaviour
         sisaWaktuPakai = durasiPakai;
         
         Debug.Log("Masker ON! (Sisa 3 Detik)");
-        OnMaskEquip?.Invoke(); // Munculkan platform hantu
+        OnMaskEquip?.Invoke(); 
     }
 
     void SelesaiPakaiMasker()
     {
         sedangPakai = false;
-        
-        // Langsung masuk ke fase Cooldown
         sedangCooldown = true;
         sisaWaktuCooldown = durasiCooldown;
 
         Debug.Log("Masker Habis! Mulai Cooldown (Tunggu 7 Detik...)");
-        OnMaskUnequip?.Invoke(); // Hilangkan platform hantu
+        OnMaskUnequip?.Invoke(); 
     }
 
     void SelesaiCooldown()

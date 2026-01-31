@@ -3,58 +3,38 @@ using UnityEngine;
 public class GhostPlatform : MonoBehaviour
 {
     private SpriteRenderer spriteRenderer;
-
-    void Awake()
-    {
-        // Mengambil referensi komponen gambar pada objek ini
-        spriteRenderer = GetComponent<SpriteRenderer>();
-    }
+    private Collider2D col; 
 
     void Start()
     {
-        // Saat game dimulai, platform otomatis sembunyi dulu
-        SetVisibility(false);
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        col = GetComponent<Collider2D>();
     }
 
-    // --- BAGIAN EVENT (Mendengarkan MaskSystem) ---
-
-    void OnEnable()
+    void Update()
     {
-        // Mendaftar ke event: "Kalau masker nyala, panggil fungsi ShowPlatform"
-        MaskSystem.OnMaskEquip += ShowPlatform;
         
-        // Mendaftar ke event: "Kalau masker mati, panggil fungsi HidePlatform"
-        MaskSystem.OnMaskUnequip += HidePlatform;
+        if (HeroSkinManager.instance == null) return;
+
+   
+        
+        bool isPakaiMaskerMedis = HeroSkinManager.instance.isGhostMode && !HeroSkinManager.instance.isPuluMask;
+
+        UpdatePlatform(isPakaiMaskerMedis);
     }
 
-    void OnDisable()
+    void UpdatePlatform(bool aktif)
     {
-        // Wajib lapor berhenti mendaftar saat objek dimatikan/pindah scene agar tidak error
-        MaskSystem.OnMaskEquip -= ShowPlatform;
-        MaskSystem.OnMaskUnequip -= HidePlatform;
-    }
-
-    // --- BAGIAN LOGIKA ---
-
-    void ShowPlatform()
-    {
-        SetVisibility(true);
-    }
-
-    void HidePlatform()
-    {
-        SetVisibility(false);
-    }
-
-    void SetVisibility(bool isVisible)
-    {
-        if (spriteRenderer != null)
+        
+        if (spriteRenderer != null) 
         {
-            // KUNCI UTAMA:
-            // Kita hanya mengubah 'enabled' pada SpriteRenderer (Gambarnya).
-            // Kita TIDAK menyentuh Collider. 
-            // Jadi walaupun isVisible = false (gambar hilang), hero tetap bisa berdiri di atasnya.
-            spriteRenderer.enabled = isVisible;
+            spriteRenderer.enabled = aktif;
+        }
+
+
+        if (col != null) 
+        {
+            col.enabled = aktif;
         }
     }
 }

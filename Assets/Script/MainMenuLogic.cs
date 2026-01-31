@@ -1,17 +1,15 @@
 using UnityEngine;
-using UnityEngine.SceneManagement; // WAJIB ADA
+using UnityEngine.SceneManagement; 
 
 public class MainMenuLogic : MonoBehaviour
 {
-    // Dipanggil oleh tombol PLAY
     public void MulaiGame()
     {
         Debug.Log("Memulai Game...");
-        // Pastikan nama scene game kamu "SampleScene"
         SceneManager.LoadScene("SampleScene");
     }
 
-    // Dipanggil oleh tombol EXIT
+  
     public void KeluarGame()
     {
         Debug.Log("Keluar dari Aplikasi!");

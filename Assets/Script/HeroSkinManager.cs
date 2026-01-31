@@ -8,7 +8,7 @@ public class HeroSkinManager : MonoBehaviour
     [Header("Settings Komponen")]
     public SpriteRenderer spriteRenderer;
     public Rigidbody2D rb;
-    public HeroMovement movementScript; // TARIK Script HeroMovement ke sini di Inspector!
+    public HeroMovement movementScript;
     public GameObject shieldVisual;
 
     [Header("UI Toolbar & Cooldown")]
@@ -22,21 +22,28 @@ public class HeroSkinManager : MonoBehaviour
 
     [Header("Asset - Masker Medis (Tombol M)")]
     public Sprite idleMedis; public Sprite jumpMedis;
-    public float durasiMaxMedis = 5f;
+    
+
+    [Tooltip("Berapa lama masker medis aktif? (Request: 3 Detik)")]
+    public float durasiAktifMedis = 3f; 
+    
+    [Tooltip("Berapa lama nunggu sampai bisa dipakai lagi? (Samakan dengan Spawn Virus)")]
+    public float durasiCooldownMedis = 3f; 
 
     [Header("Asset - Masker Pulu (Tombol N)")]
     public Sprite idlePulu; public Sprite jumpPulu;
     public float durasiMaxPulu = 3f;
 
-    [Header("Settings System")]
-    public float kecepatanRecharge = 1f;
+    [Header("Settings System (Pulu Only)")]
+    public float kecepatanRechargePulu = 1f; 
 
     private enum MaskState { Normal, Medis, Pulu }
     private MaskState currentState = MaskState.Normal;
 
     private float staminaMedis;
     private float staminaPulu;
-    private bool isMedisExhausted = false;
+
+    private bool isMedisCooldown = false; 
     private bool isPuluExhausted = false;
 
     [HideInInspector] public bool isGhostMode = false;
@@ -45,21 +52,20 @@ public class HeroSkinManager : MonoBehaviour
     void Awake()
     {
         instance = this;
-        
-        // Hapus Animator Manual agar tidak bentrok
         Animator anim = GetComponent<Animator>();
         if (anim != null) Destroy(anim);
     }
 
     void Start()
     {
-        staminaMedis = durasiMaxMedis;
+        // Set stamina awal full
+        staminaMedis = durasiAktifMedis;
         staminaPulu = durasiMaxPulu;
 
-        if (sliderMedis != null) sliderMedis.maxValue = durasiMaxMedis;
+        // Setup Slider
+        if (sliderMedis != null) sliderMedis.maxValue = durasiAktifMedis;
         if (sliderPulu != null) sliderPulu.maxValue = durasiMaxPulu;
 
-        // Otomatis cari script movement kalau lupa ditarik manual
         if (movementScript == null) movementScript = GetComponent<HeroMovement>();
     }
 
@@ -68,62 +74,93 @@ public class HeroSkinManager : MonoBehaviour
         HandleInput();
         HandleStamina();
         UpdateStatusVars();
-        UpdateSprite(); // Logic perbaikan ada di dalam sini
+        UpdateSprite();
         UpdateUI();
     }
 
-    // ... (HandleInput, HandleStamina, UpdateStatusVars SAMA SEPERTI SEBELUMNYA) ...
-    // ... Copy paste saja bagian input/stamina/status dari script lama ...
-    
-    void HandleInput() { /* ... COPY DARI SCRIPT SEBELUMNYA ... */ 
-       if (Input.GetKeyDown(KeyCode.N)) {
-           if (currentState == MaskState.Pulu) currentState = MaskState.Normal;
-           else if (staminaPulu > 0 && !isPuluExhausted) currentState = MaskState.Pulu;
-       }
-       else if (Input.GetKeyDown(KeyCode.M)) {
-           if (currentState == MaskState.Medis) currentState = MaskState.Normal;
-           else if (staminaMedis > 0 && !isMedisExhausted) currentState = MaskState.Medis;
-       }
+    void HandleInput()
+    {
+       
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            if (currentState == MaskState.Pulu) currentState = MaskState.Normal;
+            else if (staminaPulu > 0 && !isPuluExhausted) currentState = MaskState.Pulu;
+        }
+        
+        else if (Input.GetKeyDown(KeyCode.M))
+        {
+            if (currentState == MaskState.Medis)
+            {
+                
+                currentState = MaskState.Normal;
+            }
+            else
+            {
+                
+                if (!isMedisCooldown && staminaMedis >= durasiAktifMedis * 0.9f) 
+                {
+                    currentState = MaskState.Medis;
+                }
+                else
+                {
+                    Debug.Log("Masker Medis Masih Cooldown! Tunggu Bar Penuh.");
+                }
+            }
+        }
     }
 
-    void HandleStamina() { /* ... COPY DARI SCRIPT SEBELUMNYA ... */ 
-        if (currentState == MaskState.Medis) {
+    void HandleStamina()
+    {
+        if (currentState == MaskState.Medis)
+        {
             staminaMedis -= Time.deltaTime;
-            if (staminaMedis <= 0) { staminaMedis = 0; isMedisExhausted = true; currentState = MaskState.Normal; }
-        } else if (currentState == MaskState.Pulu) {
+           
+            if (staminaMedis <= 0)
+            {
+                staminaMedis = 0;
+                currentState = MaskState.Normal; 
+                isMedisCooldown = true; 
+            }
+        }
+        else 
+        {
+            if (staminaMedis < durasiAktifMedis)
+            {
+                float rechargeRate = durasiAktifMedis / durasiCooldownMedis;
+                staminaMedis += Time.deltaTime * rechargeRate;
+            }
+            else
+            {
+                staminaMedis = durasiAktifMedis; 
+                isMedisCooldown = false; 
+            }
+        }
+
+        if (currentState == MaskState.Pulu)
+        {
             staminaPulu -= Time.deltaTime;
             if (staminaPulu <= 0) { staminaPulu = 0; isPuluExhausted = true; currentState = MaskState.Normal; }
         }
-        if (currentState != MaskState.Medis) {
-            if (staminaMedis < durasiMaxMedis) staminaMedis += Time.deltaTime * kecepatanRecharge;
-            if (staminaMedis > durasiMaxMedis * 0.2f) isMedisExhausted = false;
-        }
-        if (currentState != MaskState.Pulu) {
-            if (staminaPulu < durasiMaxPulu) staminaPulu += Time.deltaTime * kecepatanRecharge;
+        else
+        {
+            if (staminaPulu < durasiMaxPulu) staminaPulu += Time.deltaTime * kecepatanRechargePulu;
             if (staminaPulu > durasiMaxPulu * 0.2f) isPuluExhausted = false;
         }
     }
 
-    void UpdateStatusVars() { 
+    void UpdateStatusVars()
+    {
         if (currentState == MaskState.Normal) { isGhostMode = false; isPuluMask = false; }
         else if (currentState == MaskState.Medis) { isGhostMode = true; isPuluMask = false; }
         else if (currentState == MaskState.Pulu) { isGhostMode = true; isPuluMask = true; }
     }
 
-    // --- BAGIAN YANG DIPERBAIKI ---
     void UpdateSprite()
     {
         if (spriteRenderer == null) return;
 
-        // PERUBAHAN UTAMA: 
-        // Jangan pakai rb.velocity.y, tapi pakai variable isGrounded dari script sebelah.
-        // Kalau isGrounded == false, berarti sedang lompat/jatuh.
         bool isJumping = false;
-        
-        if (movementScript != null)
-        {
-            isJumping = !movementScript.isGrounded; 
-        }
+        if (movementScript != null) isJumping = !movementScript.isGrounded;
 
         Sprite targetSprite = null;
 
@@ -140,28 +177,37 @@ public class HeroSkinManager : MonoBehaviour
                 break;
         }
 
-        // Safety check biar gambar gak hilang
         if (targetSprite == null) targetSprite = idleNormal;
-
-        // HANYA GANTI GAMBAR JIKA MEMANG BERBEDA
-        // (Ini mencegah Unity me-render ulang gambar yang sama berkali-kali dalam 1 detik)
-        if (spriteRenderer.sprite != targetSprite)
-        {
-            spriteRenderer.sprite = targetSprite;
-        }
+        if (spriteRenderer.sprite != targetSprite) spriteRenderer.sprite = targetSprite;
 
         if (shieldVisual != null) shieldVisual.SetActive(currentState == MaskState.Medis);
     }
 
-    void UpdateUI() { /* ... COPY DARI SCRIPT SEBELUMNYA ... */ 
+    void UpdateUI()
+    {
+        // Update Nilai Slider
         if (sliderMedis != null) sliderMedis.value = staminaMedis;
         if (sliderPulu != null) sliderPulu.value = staminaPulu;
-        if (fillMedis != null) {
-            if (isMedisExhausted) fillMedis.color = Color.red;
-            else if (currentState == MaskState.Medis) fillMedis.color = Color.cyan;
-            else fillMedis.color = Color.white;
+
+        if (fillMedis != null)
+        {
+            if (currentState == MaskState.Medis) 
+            {
+                fillMedis.color = Color.cyan;
+            }
+            else if (isMedisCooldown || staminaMedis < durasiAktifMedis) 
+            {
+                fillMedis.color = Color.red;
+            }
+            else 
+            {
+                fillMedis.color = Color.white; 
+            }
         }
-        if (fillPulu != null) {
+
+        
+        if (fillPulu != null)
+        {
             if (isPuluExhausted) fillPulu.color = Color.red;
             else if (currentState == MaskState.Pulu) fillPulu.color = Color.yellow;
             else fillPulu.color = Color.white;

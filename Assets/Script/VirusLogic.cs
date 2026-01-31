@@ -3,20 +3,19 @@ using UnityEngine;
 public class VirusLogic : MonoBehaviour
 {
     [Header("Settings")]
-    public bool isOnGhostPlatform = false; // CENTANG INI jika virus ditaruh di platform ghost
+    public bool isOnGhostPlatform = false; 
     public SpriteRenderer visualVirus;
     public Collider2D colliderVirus;
 
     void Start()
     {
-        // Pastikan punya referensi visual
+ 
         if (visualVirus == null) visualVirus = GetComponent<SpriteRenderer>();
         if (colliderVirus == null) colliderVirus = GetComponent<Collider2D>();
     }
 
     void Update()
     {
-        // Logika Visibility (Hanya untuk virus di Ghost Platform)
         if (isOnGhostPlatform)
         {
             CheckVisibility();
@@ -25,7 +24,6 @@ public class VirusLogic : MonoBehaviour
 
     void CheckVisibility()
     {
-        // Virus Ghost HANYA terlihat jika Hero sedang tekan M DAN pakai Masker Pulu
         if (HeroSkinManager.instance != null)
         {
             bool heroPakaiPulu = HeroSkinManager.instance.isGhostMode && HeroSkinManager.instance.isPuluMask;
@@ -61,28 +59,20 @@ public class VirusLogic : MonoBehaviour
     {
         if (HeroSkinManager.instance != null)
         {
-            // Ambil status Hero
-            bool isGhostMode = HeroSkinManager.instance.isGhostMode; // Tekan M
-            bool isPulu = HeroSkinManager.instance.isPuluMask;       // Tipe Pulu
-
-            // SYARAT SERANGAN:
-            // Hero harus tekan M (Mode Masker) DAN Pakai Masker Medis (Bukan Pulu)
+            
+            bool isGhostMode = HeroSkinManager.instance.isGhostMode; 
+            bool isPulu = HeroSkinManager.instance.isPuluMask;       
             if (isGhostMode && !isPulu)
             {
-                // HERO MENYERANG VIRUS!
                 Debug.Log("Virus Hancur oleh Masker Medis!");
                 Destroy(gameObject); 
             }
             else
             {
-                // HERO MATI
                 Debug.Log("Hero Mati kena Virus!");
                 
                 if (GameRules.instance != null)
                 {
-                    // --- PERUBAHAN UTAMA DI SINI ---
-                    // Dulu: GameRules.instance.ResetKeAwal();
-                    // Sekarang: Panggil fungsi KALAH agar panel muncul
                     GameRules.instance.Kalah();
                 }
             }
